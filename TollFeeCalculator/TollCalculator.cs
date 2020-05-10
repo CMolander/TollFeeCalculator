@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Nager.Date;
 using TollFeeCalculator.VehicleTypes;
 
 namespace TollFeeCalculator
@@ -108,56 +109,24 @@ namespace TollFeeCalculator
 
         private bool IsTollFreeDate(DateTime date)
         {
-            var year = date.Year;
-            var month = date.Month;
-            var day = date.Day;
+            return date.Month == 7 || date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday || IsPublicHoliday(date);
+        }
 
-            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
+        private bool IsPublicHoliday(DateTime date)
+        {
+            var publicHolidays = DateSystem.GetPublicHoliday(date.Year, CountryCode.SE).ToList();
 
-            if (year == 2013)
+            // The date before a public holiday is a toll free date, except from these ones.
+            var excludedDays = new List<string>
             {
-                if (month == 1 && day == 1 ||
-                    month == 3 && (day == 28 || day == 29) ||
-                    month == 4 && (day == 1 || day == 30) ||
-                    month == 5 && (day == 1 || day == 8 || day == 9) ||
-                    month == 6 && (day == 5 || day == 6 || day == 21) ||
-                    month == 7 ||
-                    month == 11 && day == 1 ||
-                    month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-                {
-                    return true;
-                }
-            }
+                "Midsommarafton", "Julafton", "Nyårsafton"
+            };
 
-            if (year == 2019)
-            {
-                if (month == 1 && day == 1 ||
-                    month == 3 && (day == 29 || day == 30) ||
-                    month == 4 && (day == 2 || day == 30) ||
-                    month == 5 && (day == 1 || day == 29 || day == 30) ||
-                    month == 6 && (day == 5 || day == 6 || day == 21) ||
-                    month == 7 ||
-                    month == 11 && day == 1 ||
-                    month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-                {
-                    return true;
-                }
-            }
+            var datesBeforePublicHoliday = publicHolidays.Where(x => !excludedDays.Contains(x.LocalName)).Select(x => x.Date.AddDays(-1)).ToList();
 
-            if (year == 2020)
-            {
-                if (month == 1 && day == 1 ||
-                    month == 3 && (day == 28 || day == 29) ||
-                    month == 4 && (day == 9 || day == 10 || day == 13 || day == 30) ||
-                    month == 5 && (day == 1 || day == 20 || day == 21) ||
-                    month == 6 && (day == 5 || day == 19) ||
-                    month == 7 ||
-                    month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-                {
-                    return true;
-                }
-            }
-            return false;
+            var tollFreeDates = publicHolidays.Select(x => x.Date).Concat(datesBeforePublicHoliday).ToList();
+
+            return tollFreeDates.Contains(date.Date);
         }
 
         private enum TollFreeVehicles
