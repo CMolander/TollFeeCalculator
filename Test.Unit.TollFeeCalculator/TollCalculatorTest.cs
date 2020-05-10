@@ -130,7 +130,7 @@ namespace Test.Unit.TollFeeCalculator
 
         [Theory]
         [MemberData(nameof(TollFreeVehicles))]
-        public void ShouldReturnZeroTollForTollFreeVehicle(Vehicle tollFreeVehicle)
+        public void ShouldReturnZeroTollForTollFreeVehicle(IVehicle tollFreeVehicle)
         {
             // Arrange.
             const int expectedTollFee = 0;
