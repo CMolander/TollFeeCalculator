@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using TollFeeCalculator.VehicleTypes;
 
 namespace TollFeeCalculator
@@ -58,19 +60,50 @@ namespace TollFeeCalculator
         {
             if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle)) return 0;
 
-            var hour = date.Hour;
-            var minute = date.Minute;
+            var time = date.TimeOfDay;
 
-            if (hour == 6 && minute >= 0 && minute <= 29) return 8;
-            else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
-            else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
-            else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-            else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59 || hour >= 9 && hour <= 14 && minute >= 0 && minute <= 59) return 8;
-            else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
-            else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
-            else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
-            else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-            else return 0;
+            var tollFee8TimeIntervals = new List<TimeSpan[]>
+            {
+                new[] {new TimeSpan(6, 0, 0), new TimeSpan(6, 29, 0)},
+                new[] {new TimeSpan(8, 30, 0), new TimeSpan(14, 59, 0)},
+                new[] {new TimeSpan(18, 0, 0), new TimeSpan(18, 29, 0)}
+            };
+
+            var tollFee13TimeIntervals = new List<TimeSpan[]>
+            {
+                new[] {new TimeSpan(6, 30, 0), new TimeSpan(6, 59, 0)},
+                new[] {new TimeSpan(8, 0, 0), new TimeSpan(8, 29, 0)},
+                new[] {new TimeSpan(15, 0, 0), new TimeSpan(15, 29, 0)},
+                new[] {new TimeSpan(17, 0, 0), new TimeSpan(17, 59, 0)}
+            };
+
+            var tollFee18TimeIntervals = new List<TimeSpan[]>
+            {
+                new[] {new TimeSpan(7, 0, 0), new TimeSpan(7, 59, 0)},
+                new[] {new TimeSpan(15, 30, 0), new TimeSpan(16, 59, 0)}
+            };
+
+            if (IsBetweenTimeRanges(time, tollFee8TimeIntervals))
+            {
+                return 8;
+            }
+
+            if (IsBetweenTimeRanges(time, tollFee13TimeIntervals))
+            {
+                return 13;
+            }
+
+            if (IsBetweenTimeRanges(time, tollFee18TimeIntervals))
+            {
+                return 18;
+            }
+
+            return 0;
+        }
+
+        private bool IsBetweenTimeRanges(TimeSpan time, IEnumerable<TimeSpan[]> timeIntervals)
+        {
+            return timeIntervals.Any(timeInterval => timeInterval[0] <= time && time <= timeInterval[1]);
         }
 
         private bool IsTollFreeDate(DateTime date)
