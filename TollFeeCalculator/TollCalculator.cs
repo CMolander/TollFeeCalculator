@@ -15,29 +15,31 @@ public class TollCalculator
 
     public int GetTollFee(Vehicle vehicle, DateTime[] dates)
     {
-        DateTime intervalStart = dates[0];
         int totalFee = 0;
-        foreach (DateTime date in dates)
+        int maximumTollFee = 60;
+        int maximumDiffMinutes = 60;
+
+        for (int i = 0; i < dates.Length; i++)
         {
-            int nextFee = GetTollFee(date, vehicle);
-            int tempFee = GetTollFee(intervalStart, vehicle);
+            int fee = GetTollFee(dates[i], vehicle);
 
-            long diffInMillies = date.Millisecond - intervalStart.Millisecond;
-            long minutes = diffInMillies/1000/60;
+            bool isNumberOfPassagesMoreThanOne = i >= 1;
 
-            if (minutes <= 60)
+            if (isNumberOfPassagesMoreThanOne)
             {
-                if (totalFee > 0) totalFee -= tempFee;
-                if (nextFee >= tempFee) tempFee = nextFee;
-                totalFee += tempFee;
+                var diffMinutes = (dates[i] - dates[i - 1]).TotalMinutes;
+
+                var previousFee = diffMinutes <= maximumDiffMinutes ? GetTollFee(dates[i - 1], vehicle) : 0;
+
+                totalFee = fee > previousFee ? totalFee + (fee - previousFee) : totalFee;
             }
             else
             {
-                totalFee += nextFee;
+                totalFee = fee;
             }
         }
-        if (totalFee > 60) totalFee = 60;
-        return totalFee;
+
+        return totalFee > maximumTollFee ? maximumTollFee : totalFee;
     }
 
     private bool IsTollFreeVehicle(Vehicle vehicle)
@@ -63,7 +65,7 @@ public class TollCalculator
         else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
         else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
         else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-        else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8;
+        else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59 || hour >= 9 && hour <= 14 && minute >= 0 && minute <= 59) return 8;
         else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
         else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
         else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
@@ -88,6 +90,37 @@ public class TollCalculator
                 month == 6 && (day == 5 || day == 6 || day == 21) ||
                 month == 7 ||
                 month == 11 && day == 1 ||
+                month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
+            {
+                return true;
+            }
+        }
+
+
+        if (year == 2019)
+        {
+            if (month == 1 && day == 1 ||
+                month == 3 && (day == 29 || day == 30) ||
+                month == 4 && (day == 2 || day == 30) ||
+                month == 5 && (day == 1 || day == 29 || day == 30) ||
+                month == 6 && (day == 5 || day == 6 || day == 21) ||
+                month == 7 ||
+                month == 11 && day == 1 ||
+                month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
+            {
+                return true;
+            }
+        }
+
+
+        if (year == 2020)
+        {
+            if (month == 1 && day == 1 ||
+                month == 3 && (day == 28 || day == 29) ||
+                month == 4 && (day == 9 || day == 10 || day == 13 || day == 30) ||
+                month == 5 && (day == 1 || day == 20 || day == 21) ||
+                month == 6 && (day == 5 || day == 19) ||
+                month == 7 ||
                 month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
             {
                 return true;
