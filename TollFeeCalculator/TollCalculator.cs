@@ -1,4 +1,5 @@
 ﻿using System;
+using TollFeeCalculator.VehicleTypes;
 
 namespace TollFeeCalculator
 {

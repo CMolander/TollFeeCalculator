@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using TollFeeCalculator;
+using TollFeeCalculator.VehicleTypes;
 using Xunit;
 
 namespace Test.Unit.TollFeeCalculator
@@ -56,7 +57,12 @@ namespace Test.Unit.TollFeeCalculator
 
         public static IEnumerable<object[]> TollFreeVehicles => new[]
         {
-            new object[] { new Motorbike() }
+            new object[] { new Motorbike() },
+            new object[] { new Military()  },
+            new object[] { new Tractor() },
+            new object[] { new Diplomat() },
+            new object[] { new Foreign() },
+            new object[] { new Emergency() }
         };
 
         [Theory]
